@@ -3,21 +3,27 @@ package com.example.c24productapp
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.runtime.Composable
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.*
 import com.example.c24productapp.ui.productoverview.ProductOverviewScreen
+import com.example.c24productapp.ui.productdetails.ProductDetailsScreen
 import com.example.c24productapp.ui.theme.C24ProductAppTheme
 import com.example.c24productapp.viewmodel.ProductListViewModel
 
 class MainActivity : ComponentActivity() {
-
-    private val viewModel = ProductListViewModel()
+    private val viewModel: ProductListViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        viewModel.loadProducts() // <-- gọi API khi mở app
-
         setContent {
             C24ProductAppTheme {
-                ProductOverviewScreen(viewModel)
+                Surface(color = MaterialTheme.colorScheme.background) {
+                    AppNavigation(viewModel)
+                }
             }
         }
     }

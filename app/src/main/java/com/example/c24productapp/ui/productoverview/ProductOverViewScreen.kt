@@ -1,39 +1,35 @@
 package com.example.c24productapp.ui.productoverview
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.foundation.lazy.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
+import androidx.compose.ui.*
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.*
 import androidx.compose.ui.platform.LocalUriHandler
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.*
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.style.*
+import androidx.compose.ui.unit.*
+import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
 import com.example.c24productapp.model.Product
+import com.example.c24productapp.navigation.Screen
 import com.example.c24productapp.viewmodel.ProductListViewModel
 import java.text.SimpleDateFormat
 import java.util.*
 
 @Composable
-fun ProductOverviewScreen(viewModel: ProductListViewModel) {
+fun ProductOverviewScreen(
+    viewModel: ProductListViewModel,
+    navController: NavHostController
+) {
     val filters by viewModel.filters.collectAsState()
     val selectedFilter by viewModel.selectedFilter.collectAsState()
     val productList by viewModel.filteredProducts.collectAsState()
+    val favoriteProducts by viewModel.favoriteProducts.collectAsState()
     val title by viewModel.headerTitle.collectAsState()
     val subtitle by viewModel.headerSubtitle.collectAsState()
 
@@ -47,14 +43,14 @@ fun ProductOverviewScreen(viewModel: ProductListViewModel) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color(0xFF1976D2)) // Blue
+                .background(Color(0xFF1976D2))
                 .padding(16.dp),
             contentAlignment = Alignment.Center
         ) {
             Text(
                 text = "Check24 ProductApp",
                 style = MaterialTheme.typography.titleLarge,
-                color = Color.White,
+                color = Color.White
             )
         }
 
@@ -82,16 +78,23 @@ fun ProductOverviewScreen(viewModel: ProductListViewModel) {
             Text(text = subtitle, style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
         }
 
+        val uriHandler = LocalUriHandler.current
+
         // Product List
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),) {
+        LazyColumn(modifier = Modifier.fillMaxSize()) {
             items(productList) { product ->
-                ProductItem(product)
+                ProductItem(
+                    product = product,
+                    isFavorited = favoriteProducts.contains(product),
+                    onClick = {
+                        viewModel.selectProduct(product)
+                        navController.navigate(Screen.ProductDetails.route)
+                    }
+                )
                 Spacer(modifier = Modifier.height(12.dp))
             }
-            item {
-                val uriHandler = LocalUriHandler.current
 
+            item {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -134,77 +137,94 @@ fun FilterTab(
 }
 
 @Composable
-fun ProductItem(product: Product) {
+fun ProductItem(
+    product: Product,
+    isFavorited: Boolean,
+    onClick: () -> Unit
+) {
     val date = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
         .format(Date(product.releaseDate * 1000))
 
     val imageLink = "https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png"
     val painter = rememberAsyncImagePainter(imageLink)
 
-    Row(
+    val backgroundColor = if (isFavorited) Color(0xFFD1C4E9) else Color.White
+
+    Box(
         modifier = Modifier
             .fillMaxWidth()
-            .border(1.dp, Color.LightGray)
-            .padding(8.dp),
-        verticalAlignment = Alignment.CenterVertically
+            .padding(horizontal = 12.dp)
+            .clip(MaterialTheme.shapes.medium)
+            .clickable { onClick() }
+            .background(backgroundColor)
+            .border(1.dp, Color.LightGray, MaterialTheme.shapes.small)
+            .padding(8.dp)
     ) {
-        if (product.available) {
-            Image(
-                painter = painter,
-                contentDescription = "Product Image",
-                modifier = Modifier
-                    .size(64.dp)
-                    .clip(MaterialTheme.shapes.small)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-        }
-
-        Column(modifier = Modifier.weight(1f)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(product.name, fontWeight = FontWeight.Bold)
-                Text(date, style = MaterialTheme.typography.labelSmall)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            if (product.available) {
+                Image(
+                    painter = painter,
+                    contentDescription = "Product Image",
+                    modifier = Modifier
+                        .size(80.dp)
+                        .clip(MaterialTheme.shapes.small)
+                        .padding(4.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
             }
 
-            Text(
-                text = product.description,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-                style = MaterialTheme.typography.bodySmall
-            )
-
-            Text(
-                buildAnnotatedString {
-                    withStyle(
-                        style = SpanStyle(
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 13.sp
-                        )
-                    ) {
-                        append("Preis: ")
-                    }
-                    withStyle(
-                        style = SpanStyle(fontSize = 13.sp)
-                    ) {
-                        append("%.2f %s".format(product.price.value, product.price.currency))
-                    }
+            Column(modifier = Modifier.weight(1f)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(product.name, fontWeight = FontWeight.Bold)
+                    Text(date, style = MaterialTheme.typography.labelSmall)
                 }
-            )
 
-            RatingStars(product.rating)
-        }
+                Text(
+                    buildAnnotatedString {
+                        withStyle(
+                            style = SpanStyle(
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 13.sp
+                            )
+                        ) {
+                            append("Preis: ")
+                        }
+                        withStyle(
+                            style = SpanStyle(fontSize = 13.sp)
+                        ) {
+                            append("%.2f %s".format(product.price.value, product.price.currency))
+                        }
+                    }
+                )
 
-        if (!product.available) {
-            Spacer(modifier = Modifier.width(8.dp))
-            Image(
-                painter = painter,
-                contentDescription = "Product Image",
-                modifier = Modifier
-                    .size(64.dp)
-                    .clip(MaterialTheme.shapes.small)
-            )
+                RatingStars(product.rating)
+
+                Text(
+                    text = product.description,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.Gray
+                )
+            }
+
+            if (!product.available) {
+                Spacer(modifier = Modifier.width(8.dp))
+                Image(
+                    painter = painter,
+                    contentDescription = "Product Image",
+                    modifier = Modifier
+                        .size(80.dp)
+                        .clip(MaterialTheme.shapes.small)
+                        .padding(4.dp)
+                )
+            }
         }
     }
 }
