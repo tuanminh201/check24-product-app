@@ -3,7 +3,10 @@ package com.example.c24productapp.ui.productoverview
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.draw.clip
@@ -21,6 +24,7 @@ import com.example.c24productapp.viewmodel.ProductListViewModel
 import java.text.SimpleDateFormat
 import java.util.*
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProductOverviewScreen(
     viewModel: ProductListViewModel,
@@ -30,8 +34,11 @@ fun ProductOverviewScreen(
     val selectedFilter by viewModel.selectedFilter.collectAsState()
     val productList by viewModel.filteredProducts.collectAsState()
     val favoriteProducts by viewModel.favoriteProducts.collectAsState()
+    val isRefreshing by viewModel.isRefreshing.collectAsState()
+    val hasError by viewModel.hasError.collectAsState()
     val title by viewModel.headerTitle.collectAsState()
     val subtitle by viewModel.headerSubtitle.collectAsState()
+    val uriHandler = LocalUriHandler.current
 
     LaunchedEffect(Unit) {
         viewModel.loadProducts()
@@ -39,7 +46,6 @@ fun ProductOverviewScreen(
 
     Column(modifier = Modifier.fillMaxSize()) {
 
-        // AppBar Title
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -54,7 +60,6 @@ fun ProductOverviewScreen(
             )
         }
 
-        // Filter Tabs
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -67,49 +72,83 @@ fun ProductOverviewScreen(
                 FilterTab(
                     text = filter,
                     isSelected = isSelected,
-                    onClick = { viewModel.setFilter(filter) }
+                    onClick = { if (!hasError) viewModel.setFilter(filter) }
                 )
             }
         }
 
-        // Header title/subtitle
         Column(modifier = Modifier.padding(12.dp)) {
             Text(text = title, style = MaterialTheme.typography.headlineSmall)
             Text(text = subtitle, style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
         }
 
-        val uriHandler = LocalUriHandler.current
-
-        // Product List
-        LazyColumn(modifier = Modifier.fillMaxSize()) {
-            items(productList) { product ->
-                ProductItem(
-                    product = product,
-                    isFavorited = favoriteProducts.contains(product),
-                    onClick = {
-                        viewModel.selectProduct(product)
-                        navController.navigate(Screen.ProductDetails.route)
+        if (!hasError) {
+            PullToRefreshBox(
+                isRefreshing = isRefreshing,
+                onRefresh = { viewModel.refreshProducts() },
+                modifier = Modifier.fillMaxSize()
+            ) {
+                LazyColumn(modifier = Modifier.fillMaxSize()) {
+                    items(productList) { product ->
+                        ProductItem(
+                            product = product,
+                            isFavorited = favoriteProducts.contains(product),
+                            onClick = {
+                                viewModel.selectProduct(product)
+                                navController.navigate(Screen.ProductDetails.route)
+                            }
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
                     }
-                )
-                Spacer(modifier = Modifier.height(12.dp))
-            }
-
-            item {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 16.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "© 2016 Check24",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = Color.Gray,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.clickable {
-                            uriHandler.openUri("https://m.check24.de/rechtliche-hinweise/?deviceoutput=app")
+                    item {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 16.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "© 2016 Check24",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = Color.Gray,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.clickable {
+                                    uriHandler.openUri("https://m.check24.de/rechtliche-hinweise/?deviceoutput=app")
+                                }
+                            )
                         }
-                    )
+                    }
+                }
+            }
+        } else {
+            // Error UI
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(32.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Warning,
+                    contentDescription = "Error",
+                    tint = Color.Red,
+                    modifier = Modifier.size(64.dp)
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Probleme",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = "Die Daten konnten nicht geladen werden.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    textAlign = TextAlign.Center
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Button(onClick = { viewModel.loadProducts() }) {
+                    Text("Neuladen")
                 }
             }
         }
@@ -154,16 +193,13 @@ fun ProductItem(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 12.dp)
-            .clip(MaterialTheme.shapes.medium)
             .clickable { onClick() }
-            .background(backgroundColor)
             .border(1.dp, Color.LightGray, MaterialTheme.shapes.small)
+            .clip(MaterialTheme.shapes.medium)
+            .background(backgroundColor)
             .padding(8.dp)
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
             if (product.available) {
                 Image(
                     painter = painter,
@@ -185,23 +221,14 @@ fun ProductItem(
                     Text(date, style = MaterialTheme.typography.labelSmall)
                 }
 
-                Text(
-                    buildAnnotatedString {
-                        withStyle(
-                            style = SpanStyle(
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 13.sp
-                            )
-                        ) {
-                            append("Preis: ")
-                        }
-                        withStyle(
-                            style = SpanStyle(fontSize = 13.sp)
-                        ) {
-                            append("%.2f %s".format(product.price.value, product.price.currency))
-                        }
-                    }
-                )
+                Text(buildAnnotatedString {
+                    withStyle(
+                        style = SpanStyle(fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                    ) { append("Preis: ") }
+                    withStyle(
+                        style = SpanStyle(fontSize = 13.sp)
+                    ) { append("%.2f %s".format(product.price.value, product.price.currency)) }
+                })
 
                 RatingStars(product.rating)
 
