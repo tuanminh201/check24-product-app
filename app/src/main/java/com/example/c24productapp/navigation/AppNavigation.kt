@@ -1,12 +1,11 @@
-package com.example.c24productapp
+package com.example.c24productapp.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.c24productapp.navigation.Screen
-import com.example.c24productapp.ui.productdetails.ProductDetailsScreen
-import com.example.c24productapp.ui.productoverview.ProductOverviewScreen
+import com.example.c24productapp.ui.screens.ProductOverviewScreen
+import com.example.c24productapp.ui.screens.ProductDetailsScreen
 import com.example.c24productapp.viewmodel.ProductListViewModel
 
 @Composable

@@ -6,11 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.runtime.Composable
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.*
-import com.example.c24productapp.ui.productoverview.ProductOverviewScreen
-import com.example.c24productapp.ui.productdetails.ProductDetailsScreen
+import com.example.c24productapp.navigation.AppNavigation
 import com.example.c24productapp.ui.theme.C24ProductAppTheme
 import com.example.c24productapp.viewmodel.ProductListViewModel
 

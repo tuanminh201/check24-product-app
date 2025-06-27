@@ -5,8 +5,3 @@ data class ProductResponse(
     val filters: List<String>,
     val products: List<Product>
 )
-
-data class Header(
-    val headerTitle: String,
-    val headerDescription: String
-)

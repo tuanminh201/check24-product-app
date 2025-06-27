@@ -1,4 +1,4 @@
-package com.example.c24productapp.ui.productdetails
+package com.example.c24productapp.ui.screens
 
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -12,8 +12,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.*
 import androidx.compose.ui.unit.*
 import coil.compose.rememberAsyncImagePainter
+import com.example.c24productapp.ui.components.AppFooter
+import com.example.c24productapp.ui.components.AppHeader
+import com.example.c24productapp.ui.components.RatingStars
 import com.example.c24productapp.viewmodel.ProductListViewModel
-import com.example.c24productapp.ui.productoverview.RatingStars
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -34,28 +36,13 @@ fun ProductDetailsScreen(viewModel: ProductListViewModel) {
             modifier = Modifier
                 .fillMaxSize()
         ) {
-            // AppBar
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color(0xFF1976D2))
-                    .padding(16.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "Check24 ProductApp",
-                    style = MaterialTheme.typography.titleLarge,
-                    color = Color.White
-                )
-            }
-
+            AppHeader()
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Product Info Block
+            // Product Info
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .border(1.dp, Color.LightGray)
                     .padding(8.dp)
             ) {
                 Image(
@@ -102,7 +89,7 @@ fun ProductDetailsScreen(viewModel: ProductListViewModel) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Favorite / Vergessen button
+            // Vormerken / Vergessen button
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -126,7 +113,7 @@ fun ProductDetailsScreen(viewModel: ProductListViewModel) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Beschreibung section
+            // Description
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -150,24 +137,7 @@ fun ProductDetailsScreen(viewModel: ProductListViewModel) {
             }
 
             Spacer(modifier = Modifier.weight(1f))
-
-            // Footer
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 16.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "© 2016 Check24",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Color.Gray,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.clickable {
-                        uriHandler.openUri("https://m.check24.de/rechtliche-hinweise/?deviceoutput=app")
-                    }
-                )
-            }
+            AppFooter(uriHandler = uriHandler)
         }
-    } ?: Text("No product selected.")
+    }
 }
