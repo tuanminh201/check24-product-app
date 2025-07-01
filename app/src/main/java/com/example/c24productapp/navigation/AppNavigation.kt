@@ -6,6 +6,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.c24productapp.ui.screens.ProductOverviewScreen
 import com.example.c24productapp.ui.screens.ProductDetailsScreen
+import com.example.c24productapp.ui.screens.WebViewScreen
 import com.example.c24productapp.viewmodel.ProductListViewModel
 
 @Composable
@@ -17,7 +18,11 @@ fun AppNavigation(viewModel: ProductListViewModel) {
             ProductOverviewScreen(viewModel, navController)
         }
         composable(Screen.ProductDetails.route) {
-            ProductDetailsScreen(viewModel)
+            ProductDetailsScreen(viewModel, navController)
         }
+        composable("webview") {
+            WebViewScreen(url = "https://m.check24.de/rechtliche-hinweise?deviceoutput=app")
+        }
+
     }
 }

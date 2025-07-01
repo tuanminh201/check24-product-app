@@ -10,15 +10,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-
-private const val FOOTER_URL =
-    "https://m.check24.de/rechtliche-hinweise/?deviceoutput=app"
+import androidx.navigation.NavHostController
+import com.example.c24productapp.navigation.Screen
 
 @Composable
-fun AppFooter(uriHandler: UriHandler) {
+fun AppFooter(navController: NavHostController) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -31,7 +29,7 @@ fun AppFooter(uriHandler: UriHandler) {
             color = Color.Gray,
             textAlign = TextAlign.Center,
             modifier = Modifier.clickable {
-                uriHandler.openUri(FOOTER_URL)
+                navController.navigate(Screen.WebView.route)
             }
         )
     }

@@ -1,25 +1,22 @@
 package com.example.c24productapp.ui.screens
 
-import androidx.compose.foundation.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
-import androidx.compose.material3.pulltorefresh.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
-import androidx.compose.ui.*
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.*
-import androidx.compose.ui.platform.LocalUriHandler
-import androidx.compose.ui.platform.UriHandler
-import androidx.compose.ui.unit.*
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.example.c24productapp.navigation.Screen
-import com.example.c24productapp.ui.components.ProductItem
-import com.example.c24productapp.viewmodel.ProductListViewModel
 import com.example.c24productapp.model.Product
-import com.example.c24productapp.ui.components.AppFooter
-import com.example.c24productapp.ui.components.AppHeader
-import com.example.c24productapp.ui.components.ErrorBox
+import com.example.c24productapp.navigation.Screen
+import com.example.c24productapp.ui.components.*
+import com.example.c24productapp.viewmodel.ProductListViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -35,14 +32,12 @@ fun ProductOverviewScreen(
     val hasError by viewModel.hasError.collectAsState()
     val title by viewModel.headerTitle.collectAsState()
     val subtitle by viewModel.headerSubtitle.collectAsState()
-    val uriHandler = LocalUriHandler.current
 
     LaunchedEffect(Unit) {
         viewModel.loadProducts()
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
-
         AppHeader()
 
         FilterRow(
@@ -70,7 +65,7 @@ fun ProductOverviewScreen(
                         viewModel.selectProduct(it)
                         navController.navigate(Screen.ProductDetails.route)
                     },
-                    uriHandler = uriHandler
+                    navController = navController
                 )
             }
         } else {
@@ -78,8 +73,6 @@ fun ProductOverviewScreen(
         }
     }
 }
-
-
 
 @Composable
 fun FilterRow(
@@ -111,7 +104,7 @@ fun ProductListContent(
     products: List<Product>,
     favoriteProducts: Set<Product>,
     onProductClick: (Product) -> Unit,
-    uriHandler: UriHandler
+    navController: NavHostController
 ) {
     LazyColumn(modifier = Modifier.fillMaxSize()) {
         items(products, key = { it.id }) { product ->
@@ -123,12 +116,10 @@ fun ProductListContent(
             Spacer(modifier = Modifier.height(12.dp))
         }
         item {
-            AppFooter(uriHandler = uriHandler)
+            AppFooter(navController = navController)
         }
     }
 }
-
-
 
 @Composable
 fun FilterTab(

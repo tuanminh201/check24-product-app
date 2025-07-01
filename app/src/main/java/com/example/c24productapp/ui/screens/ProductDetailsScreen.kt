@@ -7,10 +7,10 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.*
 import androidx.compose.ui.unit.*
+import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
 import com.example.c24productapp.ui.components.AppFooter
 import com.example.c24productapp.ui.components.AppHeader
@@ -20,7 +20,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 @Composable
-fun ProductDetailsScreen(viewModel: ProductListViewModel) {
+fun ProductDetailsScreen(viewModel: ProductListViewModel,  navController: NavHostController) {
     val product by viewModel.selectedProduct.collectAsState()
     val favoriteProducts by viewModel.favoriteProducts.collectAsState()
 
@@ -30,19 +30,20 @@ fun ProductDetailsScreen(viewModel: ProductListViewModel) {
         val painter = rememberAsyncImagePainter(imageLink)
         val date = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
             .format(Date(it.releaseDate * 1000))
-        val uriHandler = LocalUriHandler.current
 
         Column(
             modifier = Modifier
                 .fillMaxSize()
         ) {
             AppHeader()
+
             Spacer(modifier = Modifier.height(16.dp))
 
             // Product Info
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .border(1.dp, Color.LightGray)
                     .padding(8.dp)
             ) {
                 Image(
@@ -137,7 +138,9 @@ fun ProductDetailsScreen(viewModel: ProductListViewModel) {
             }
 
             Spacer(modifier = Modifier.weight(1f))
-            AppFooter(uriHandler = uriHandler)
+
+            // Footer
+            AppFooter(navController = navController)
         }
     }
 }
