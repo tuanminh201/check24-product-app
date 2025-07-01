@@ -12,7 +12,7 @@ fun WebViewScreen(url: String) {
     AndroidView(
         factory = { context ->
             WebView(context).apply {
-                webViewClient = WebViewClient() // giữ người dùng trong app
+                webViewClient = WebViewClient()
                 settings.javaScriptEnabled = true
                 loadUrl(url)
             }

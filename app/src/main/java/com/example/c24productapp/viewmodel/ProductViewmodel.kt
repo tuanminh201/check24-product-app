@@ -78,14 +78,12 @@ class ProductListViewModel : ViewModel() {
                 _allProducts.value = emptyList()
                 _hasError.value = true
             } finally {
+                kotlinx.coroutines.delay(800)
                 _isRefreshing.value = false
             }
         }
     }
 
-    fun refreshProducts() {
-        loadProducts()
-    }
 
 
     fun selectProduct(product: Product) {

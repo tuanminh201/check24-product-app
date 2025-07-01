@@ -55,7 +55,7 @@ fun ProductOverviewScreen(
         if (!hasError) {
             PullToRefreshBox(
                 isRefreshing = isRefreshing,
-                onRefresh = { viewModel.refreshProducts() },
+                onRefresh = { viewModel.loadProducts() },
                 modifier = Modifier.fillMaxSize()
             ) {
                 ProductListContent(
